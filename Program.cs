@@ -20,7 +20,7 @@ if(!context.Teachers.Any())
 {
     TeacherParser.Init();
 }
-string botToken = File.ReadAllText("D:\\NureBot\\Nurebot\\Token");
+string botToken = File.ReadAllText("Token");
 TelegramBotClient BotClient = new TelegramBotClient(botToken);
     
 using CancellationTokenSource cts = new ();

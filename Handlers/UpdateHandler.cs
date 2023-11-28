@@ -51,40 +51,44 @@ public class UpdateHandler
                 {
                     string[] words = message.Text.Split();
                     string command = words[0];
-                    switch (command)
+                    if (message.Text.Contains("/choose"))
                     {
-                        case ("/choose"):
-                            try
-                            {
-                                using (Context context = new Context())
-                                {
-                                    var existingCustomer = context.Customers.Find(message.Chat.Id);
-                                    if (existingCustomer.ChatType == null)
-                                    {
-                                        await bot.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                                        existingCustomer.CistName = context.Groups.ToList().Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
-                                        existingCustomer.CistId = context.Groups.ToList().Find(x => x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
-                                        existingCustomer.ChatType = message.Chat.Type.ToString();
-                                    }
-                                    else
-                                    {
-                                        existingCustomer.CistName = context.Groups.ToList().Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
-                                        existingCustomer.CistId = context.Groups.ToList()
-                                            .Find(x => x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
-                                    }
-                                    bot.SendTextMessageAsync(message.Chat.Id, $"Дякую за реєстрацію!");
-                                    context.SaveChanges();
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                bot.SendTextMessageAsync(message.Chat.Id, $"Вибачте, але група вказана неправильно");
-                                Console.WriteLine($"Error: {e}");
-                                
-                            }
-                            break;
-                        case ("/day"):
+                        try
+                        {
                             using (Context context = new Context())
+                            {
+                                var existingCustomer = context.Customers.Find(message.Chat.Id);
+                                if (existingCustomer.ChatType == null)
+                                {
+                                    await bot.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+                                    existingCustomer.CistName = context.Groups.ToList()
+                                        .Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
+                                    existingCustomer.CistId = context.Groups.ToList().Find(x =>
+                                        x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
+                                    existingCustomer.ChatType = message.Chat.Type.ToString();
+                                }
+                                else
+                                {
+                                    existingCustomer.CistName = context.Groups.ToList()
+                                        .Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
+                                    existingCustomer.CistId = context.Groups.ToList()
+                                        .Find(x => x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
+                                }
+
+                                bot.SendTextMessageAsync(message.Chat.Id, $"Дякую за реєстрацію!");
+                                context.SaveChanges();
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            bot.SendTextMessageAsync(message.Chat.Id, $"Вибачте, але група вказана неправильно");
+                            Console.WriteLine($"Error: {e}");
+
+                        }
+                    }
+                    else if (message.Text.Contains("/day"))
+                    {
+                        using (Context context = new Context())
                             {
 
                                 if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
@@ -132,10 +136,9 @@ public class UpdateHandler
                                     bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, але ви не зареєструвались");
                                 }
                             }
-                            break;
-                        
-                        case ("/week"):
-                            using (Context context = new Context())
+                    } else if (message.Text.Contains("/week"))
+                    {
+                        using (Context context = new Context())
                             {
                                 if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
                                 {
@@ -195,9 +198,9 @@ public class UpdateHandler
                                     bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, але ви не зареєструвались");
                                 }
                             }
-                            break;
-                        case ("/next_day"):
-                            using (Context context = new Context())
+                    } else if (message.Text.Contains("/next_day"))
+                    {
+                        using (Context context = new Context())
                             {
                                 if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
                                 {
@@ -243,18 +246,19 @@ public class UpdateHandler
                                     bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, але ви не зареєструвались");
                                 }
                             }
-                            break;
-                        case ("/next_week"):
-                            using (Context context = new Context())
+                    } else if (message.Text.Contains("/next_week"))
+                    {
+                        using (Context context = new Context())
+                        {
+                            if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
                             {
-                                if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
-                                {
                                 long? Cistid = context.Customers.ToList()
                                     .Find(x => x.ChatId == message.Chat.Id).CistId;
-                                
-                                DateTime mondayDateTime = TimeZoneInfo.ConvertTime(DateTime.Today.AddDays(DayOfWeek.Monday - DateTime.Today.DayOfWeek).AddDays(7),
+
+                                DateTime mondayDateTime = TimeZoneInfo.ConvertTime(
+                                    DateTime.Today.AddDays(DayOfWeek.Monday - DateTime.Today.DayOfWeek).AddDays(7),
                                     kyivTimeZone);
-                                    
+
                                 int weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(mondayDateTime,
                                     CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule,
                                     CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
@@ -270,7 +274,8 @@ public class UpdateHandler
                                     List<Event> scheduleEvent =
                                         EventParser.GetSchedule("group", Cistid, startTime, endTime);
                                     scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
-                                    string TextDay = $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
+                                    string TextDay =
+                                        $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
                                     TextDay = cultureInfo.TextInfo.ToTitleCase(TextDay);
                                     if (scheduleEvent.Count == 0)
                                     {
@@ -280,8 +285,10 @@ public class UpdateHandler
                                     {
                                         foreach (var Event in scheduleEvent)
                                         {
-                                            DateTime Start = TimeZoneInfo.ConvertTime(TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
-                                            DateTime End = TimeZoneInfo.ConvertTime(TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
+                                            DateTime Start = TimeZoneInfo.ConvertTime(
+                                                TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
+                                            DateTime End = TimeZoneInfo.ConvertTime(
+                                                TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
                                             string Teacher;
                                             if (Event.Teachers.Count == 0)
                                             {
@@ -300,108 +307,111 @@ public class UpdateHandler
                                     }
                                 }
 
-                                bot.SendTextMessageAsync(message.Chat.Id, weekText + DonateHtml, parseMode: ParseMode.Html, disableWebPagePreview: true);
-                                }
-                                else
-                                {
-                                    bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, але ви не зареєструвались");
-                                }
-                            }
-                            break; 
-                        
-                        case ("/notify"):
-                            string filePath = "D:\\NureBot\\NureBot\\Admin_id";
-                            var numbers = new List<long>();
-                            using (var reader = new StreamReader(filePath))
-                            {
-                                string line;
-                                while ((line = reader.ReadLine()) != null)
-                                {
-                                    // Try to parse the line as an integer and add it to the list
-                                    if (long.TryParse(line, out long number))
-                                    {
-                                        numbers.Add(number);
-                                    }
-                                }
-                            }
-
-                            if (numbers.Contains(message.Chat.Id))
-                            {
-                                using (Context context = new Context())
-                                {
-                                    string text = message.Text.Replace("/notify ", "");
-                                    List<long> chatIds = context.Customers.Select(c => c.ChatId).ToList();
-                                    foreach (long chatId in chatIds)
-                                    {
-                                        bot.SendTextMessageAsync(chatId, text);
-                                        Thread.Sleep(100);
-                                    }
-                                }
+                                bot.SendTextMessageAsync(message.Chat.Id, weekText + DonateHtml,
+                                    parseMode: ParseMode.Html, disableWebPagePreview: true);
                             }
                             else
                             {
-                                bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, але ви не маєте доступ до цієї команди");
+                                bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, але ви не зареєструвались");
                             }
-                            break; 
-                        case ("/statistics"):
-                            string Path = "D:\\NureBot\\NureBot\\Admin_id";
-                            var Admin_ids = new List<long>();
-                            using (var reader = new StreamReader(Path))
+                        }
+                    } else if (message.Text.Contains("/notify"))
+                    {
+                        string filePath = "D:\\NureBot\\NureBot\\Admin_id";
+                        var numbers = new List<long>();
+                        using (var reader = new StreamReader(filePath))
+                        {
+                            string line;
+                            while ((line = reader.ReadLine()) != null)
                             {
-                                string line;
-                                while ((line = reader.ReadLine()) != null)
+                                // Try to parse the line as an integer and add it to the list
+                                if (long.TryParse(line, out long number))
                                 {
-                                    // Try to parse the line as an integer and add it to the list
-                                    if (long.TryParse(line, out long id))
-                                    {
-                                        Admin_ids.Add(id);
-                                    }
+                                    numbers.Add(number);
                                 }
                             }
+                        }
 
-                            if (Admin_ids.Contains(message.Chat.Id))
+                        if (numbers.Contains(message.Chat.Id))
+                        {
+                            using (Context context = new Context())
                             {
-                                using (Context context = new Context())
-                                {            
-                                    long privateCount = context.Customers.Count(c => c.ChatType == "Private");
-                                    long groupCount = context.Customers.Count(c => c.ChatType == "Group"|| c.ChatType == "Supergroup");
-                                    long noneCount = context.Customers.Count(c => c.ChatType == null);
-                                    bot.SendTextMessageAsync(message.Chat.Id,
-                                        $"Statistics:\nPrivate = {privateCount}\nGroup = {groupCount}\nNot Registered = {noneCount}");
+                                string text = message.Text.Replace("/notify ", "");
+                                List<long> chatIds = context.Customers.Select(c => c.ChatId).ToList();
+                                foreach (long chatId in chatIds)
+                                {
+                                    bot.SendTextMessageAsync(chatId, text);
+                                    Thread.Sleep(100);
                                 }
                             }
-                            else
+                        }
+                        else
+                        {
+                            bot.SendTextMessageAsync(message.Chat.Id,
+                                "Вибачте, але ви не маєте доступ до цієї команди");
+                        }
+                    } else if (message.Text.Contains("/statistics"))
+                    {
+                        string Path = "D:\\NureBot\\NureBot\\Admin_id";
+                        var Admin_ids = new List<long>();
+                        using (var reader = new StreamReader(Path))
+                        {
+                            string line;
+                            while ((line = reader.ReadLine()) != null)
                             {
-                                bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, але ви не маєте доступ до цієї команди");
+                                // Try to parse the line as an integer and add it to the list
+                                if (long.TryParse(line, out long id))
+                                {
+                                    Admin_ids.Add(id);
+                                }
                             }
-                            break;
-                        case ("/help"):
-                            await bot.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                            await bot.SendTextMessageAsync(
-                                message.Chat.Id,
-                                "Цей бот має низку команд, за допомогою яких ви можете отримати розклад для себе, " +
-                                "і своєї групи. Нижче буде список цих команд, із коротким описом, і прикладом. \n \n" +
-                                "Список команд бота: \n \n" +
-                                "\t <code>/choose group</code> - зміна групи у чаті, замість group треба написати назву вашої групи. " +
-                                "Наприклад: <code>/choose КІУКІ-22-7</code>, <code>/choose кіукі-22-7</code> і тд. Увага! Назву групи бот розуміє лише " +
-                                "якщо та була введена українською, через те шо він звіряє назву із реєстром на сайті cist.nure.ua." +
-                                " Якщо у вас виникла помилка зміни групи, перевірте щоб назва була українською мовою, " +
-                                "і відповідала тій що на cist.nure.ua. \n" +
-                                "\t <code>/help</code> - вам відправиться це повідомлення. \n" +
-                                "\t <code>/day</code> - вам відправиться розклад для вашої групи на поточний день. \n" +
-                                "\t <code>/week</code> - вам відправиться розклад для вашої групи на поточний тиждень.\n" +
-                                "\t <code>/next_day</code> - відправляє розклад на наступний день. \n" +
-                                "\t <code>/next_week</code> - відправить розклад на наступний тиждень. \n \n",
+                        }
+
+                        if (Admin_ids.Contains(message.Chat.Id))
+                        {
+                            using (Context context = new Context())
+                            {
+                                long privateCount = context.Customers.Count(c => c.ChatType == "Private");
+                                long groupCount = context.Customers.Count(c =>
+                                    c.ChatType == "Group" || c.ChatType == "Supergroup");
+                                long noneCount = context.Customers.Count(c => c.ChatType == null);
+                                bot.SendTextMessageAsync(message.Chat.Id,
+                                    $"Statistics:\nPrivate = {privateCount}\nGroup = {groupCount}\nNot Registered = {noneCount}");
+                            }
+                        }
+                        else
+                        {
+                            bot.SendTextMessageAsync(message.Chat.Id,
+                                "Вибачте, але ви не маєте доступ до цієї команди");
+                        }
+                    } else if (message.Text.Contains("/help"))
+                    {
+                        await bot.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+                        await bot.SendTextMessageAsync(
+                            message.Chat.Id,
+                            "Цей бот має низку команд, за допомогою яких ви можете отримати розклад для себе, " +
+                            "і своєї групи. Нижче буде список цих команд, із коротким описом, і прикладом. \n \n" +
+                            "Список команд бота: \n \n" +
+                            "\t <code>/choose group</code> - зміна групи у чаті, замість group треба написати назву вашої групи. " +
+                            "Наприклад: <code>/choose КІУКІ-22-7</code>, <code>/choose кіукі-22-7</code> і тд. Увага! Назву групи бот розуміє лише " +
+                            "якщо та була введена українською, через те шо він звіряє назву із реєстром на сайті cist.nure.ua." +
+                            " Якщо у вас виникла помилка зміни групи, перевірте щоб назва була українською мовою, " +
+                            "і відповідала тій що на cist.nure.ua. \n" +
+                            "\t <code>/help</code> - вам відправиться це повідомлення. \n" +
+                            "\t <code>/day</code> - вам відправиться розклад для вашої групи на поточний день. \n" +
+                            "\t <code>/week</code> - вам відправиться розклад для вашої групи на поточний тиждень.\n" +
+                            "\t <code>/next_day</code> - відправляє розклад на наступний день. \n" +
+                            "\t <code>/next_week</code> - відправить розклад на наступний тиждень. \n \n",
                             parseMode: ParseMode.Html);
-                            break;
-                        default:
-                            if (command[0] == '/')
-                            {
-                                bot.SendTextMessageAsync(message.Chat.Id, "Вибачте, ви написали команду не правильно, зверніться до команди /help");
-                            }
-                            break;
                     }
-
+                    else
+                    {
+                        if (command[0] == '/')
+                        {
+                            bot.SendTextMessageAsync(message.Chat.Id,
+                                "Вибачте, ви написали команду не правильно, зверніться до команди /help");
+                        }
+                    }
                 }
                 if (message is not null && message.NewChatMembers is not null)
                 {

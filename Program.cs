@@ -2,6 +2,7 @@
 using NureBot.Classes;
 using NureBot.Handlers;
 using NureBot.Parsers;
+using NureBot.Contexts;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;

@@ -102,7 +102,7 @@ public class UpdateHandler
                                     List<Event> scheduleEvent =
                                         EventParser.GetSchedule("group", Cistid, startTime, endTime);
                                     string TextDay = $"Розклад на {startDateTime.ToString("dd.MM.yyyy")}:\n";
-                                    if (scheduleEvent.Count == 0)
+                                    if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                                     {
                                         TextDay += "Пар нема. Відпочивайте!\n";
                                     }
@@ -159,15 +159,15 @@ public class UpdateHandler
                                     long endTime = startTime + 86400;
                                     List<Event> scheduleEvent =
                                         EventParser.GetSchedule("group", Cistid, startTime, endTime);
-                                    scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
                                     string TextDay = $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
                                     TextDay = cultureInfo.TextInfo.ToTitleCase(TextDay);
-                                    if (scheduleEvent.Count == 0)
+                                    if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                                     {
                                         weekText += TextDay + "Пар нема. Відпочивайте!\n\n";
                                     }
                                     else
                                     {
+                                        scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
                                         foreach (var Event in scheduleEvent)
                                         {
                                             DateTime Start = TimeZoneInfo.ConvertTime(TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
@@ -210,15 +210,14 @@ public class UpdateHandler
                                 long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
                                 long endTime = startTime + 86400;
                                 List<Event> scheduleEvent = EventParser.GetSchedule("group", Cistid, startTime, endTime);
-                                scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
-
                                 string TextDay = $"Розклад на {startDateTime.ToString("dd.MM.yyyy")}:\n";
-                                if (scheduleEvent.Count == 0)
+                                if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                                 {
                                     TextDay += "Пар нема. Відпочивайте!\n";
                                 }
                                 else
                                 {
+                                    scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
                                     foreach (var Event in scheduleEvent)
                                     {
                                         DateTime Start = TimeZoneInfo.ConvertTime(TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
@@ -272,16 +271,16 @@ public class UpdateHandler
                                     long endTime = startTime + 86400;
                                     List<Event> scheduleEvent =
                                         EventParser.GetSchedule("group", Cistid, startTime, endTime);
-                                    scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
                                     string TextDay =
                                         $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
                                     TextDay = cultureInfo.TextInfo.ToTitleCase(TextDay);
-                                    if (scheduleEvent.Count == 0)
+                                    if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                                     {
                                         weekText += TextDay + "Пар нема. Відпочивайте!\n\n";
                                     }
                                     else
                                     {
+                                        scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
                                         foreach (var Event in scheduleEvent)
                                         {
                                             DateTime Start = TimeZoneInfo.ConvertTime(

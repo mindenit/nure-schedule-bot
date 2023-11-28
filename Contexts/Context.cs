@@ -11,13 +11,13 @@ public class Context: DbContext
     public Context() => {
         if(!Groups.Any() && !Teachers.Any() && !Customers.Any())
         {
-            Database.EnsureCreated()
+            Database.EnsureCreated();
         }
     }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseNpgsql(
-            File.ReadAllText("D:\\NureBot\\NureBot\\dbConnection"));
+            File.ReadAllText("dbConnection"));
     }
 }

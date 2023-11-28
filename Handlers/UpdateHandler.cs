@@ -317,7 +317,7 @@ public class UpdateHandler
                         }
                     } else if (message.Text.Contains("/notify"))
                     {
-                        string filePath = "D:\\NureBot\\NureBot\\Admin_id";
+                        string filePath = "Admin_id";
                         var numbers = new List<long>();
                         using (var reader = new StreamReader(filePath))
                         {
@@ -352,7 +352,7 @@ public class UpdateHandler
                         }
                     } else if (message.Text.Contains("/statistics"))
                     {
-                        string Path = "D:\\NureBot\\NureBot\\Admin_id";
+                        string Path = "Admin_id";
                         var Admin_ids = new List<long>();
                         using (var reader = new StreamReader(Path))
                         {

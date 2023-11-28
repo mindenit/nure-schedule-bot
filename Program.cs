@@ -9,9 +9,16 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using File = System.IO.File;
 
+var context = new Context();
+if(!context.Groups.Any())
+{
+    GroupParser.Init();
+}
 
-GroupParser.Init();
-TeacherParser.Init();
+if(!context.Teachers.Any())
+{
+    TeacherParser.Init();
+}
 string botToken = File.ReadAllText("D:\\NureBot\\Nurebot\\Token");
 TelegramBotClient BotClient = new TelegramBotClient(botToken);
     

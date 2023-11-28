@@ -101,8 +101,6 @@ public class UpdateHandler
                                     long endTime = startTime + 86400;
                                     List<Event> scheduleEvent =
                                         EventParser.GetSchedule("group", Cistid, startTime, endTime);
-                                    scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
-
                                     string TextDay = $"Розклад на {startDateTime.ToString("dd.MM.yyyy")}:\n";
                                     if (scheduleEvent.Count == 0)
                                     {
@@ -110,6 +108,7 @@ public class UpdateHandler
                                     }
                                     else
                                     {
+                                        scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
                                         foreach (var Event in scheduleEvent)
                                         {
                                             DateTime Start = TimeZoneInfo.ConvertTime(TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);

@@ -17,8 +17,7 @@ public class EventParser
                     .Result;
                 if (Response.IsSuccessStatusCode)
                 {
-                    List<Event> Schedule =
-                        JsonConvert.DeserializeObject<List<Event>>(Response.Content.ReadAsStringAsync().Result);
+                    List<Event> Schedule = JsonConvert.DeserializeObject<List<Event>>(Response.Content.ReadAsStringAsync().Result);
                     return Schedule;
                 }
             }

@@ -9,13 +9,14 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using File = System.IO.File;
 
+
 GroupParser.Init();
 TeacherParser.Init();
 string botToken = File.ReadAllText("D:\\NureBot\\Nurebot\\Token");
 TelegramBotClient BotClient = new TelegramBotClient(botToken);
-
+    
 using CancellationTokenSource cts = new ();
-
+    
 ReceiverOptions receiverOptions = new()
 {
     AllowedUpdates = new UpdateType[]
@@ -26,17 +27,24 @@ ReceiverOptions receiverOptions = new()
     }
 };
 
-BotClient.StartReceiving(
-    updateHandler: (bot, update, cancellationToken) => UpdateHandler.HandleUpdateAsync(BotClient, update, cancellationToken),
-    pollingErrorHandler: HandlePollingErrorAsync,
-    receiverOptions: receiverOptions,
-    cancellationToken: cts.Token
-);
-
-
-var me = await BotClient.GetMeAsync();
-Console.WriteLine($"Start listening for @{me.Username}");
-Console.ReadLine();
+try
+{    
+    BotClient.StartReceiving(
+        updateHandler: (bot, update, cancellationToken) => UpdateHandler.HandleUpdateAsync(BotClient, update, cancellationToken),
+        pollingErrorHandler: HandlePollingErrorAsync,
+        receiverOptions: receiverOptions,
+        cancellationToken: cts.Token
+    );
+    
+    
+    var me = await BotClient.GetMeAsync();
+    Console.WriteLine($"Start listening for @{me.Username}");
+    Console.ReadLine();
+    }
+catch (Exception e)
+{
+    Console.WriteLine(e);
+}
 
 // Send cancellation request to stop bot
 cts.Cancel();

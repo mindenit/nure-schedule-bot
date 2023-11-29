@@ -12,6 +12,7 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
       <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+      <PackageReference Include="Tomlyn" Version="0.17.0" />
     </ItemGroup>
 
 </Project>

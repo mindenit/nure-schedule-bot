@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NureBot.Classes;
+using NureBot.Service;
 
 namespace NureBot.Contexts;
 
@@ -13,6 +14,6 @@ public class Context: DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseNpgsql(
-            File.ReadAllText("dbConnection"));
+            EnviromentManager.ReadDbString());
     }
 }

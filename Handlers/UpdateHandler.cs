@@ -315,20 +315,18 @@ public class UpdateHandler
                         }
                     } else if (message.Text.Contains("/notify"))
                     {
-                        string filePath = "Admin_id";
+                        string inputString = EnviromentManager.ReadAdmins(); 
                         var numbers = new List<long>();
-                        using (var reader = new StreamReader(filePath))
+                        
+                        string[] numberStrings = inputString.Split(',');
+                        foreach (var numberString in numberStrings)
                         {
-                            string line;
-                            while ((line = reader.ReadLine()) != null)
+                            if (long.TryParse(numberString, out long number))
                             {
-                                // Try to parse the line as an integer and add it to the list
-                                if (long.TryParse(line, out long number))
-                                {
-                                    numbers.Add(number);
-                                }
+                                numbers.Add(number);
                             }
                         }
+
 
                         if (numbers.Contains(message.Chat.Id))
                         {
@@ -350,22 +348,19 @@ public class UpdateHandler
                         }
                     } else if (message.Text.Contains("/statistics"))
                     {
-                        string Path = "Admin_id";
-                        var Admin_ids = new List<long>();
-                        using (var reader = new StreamReader(Path))
+                        string inputString = EnviromentManager.ReadAdmins(); 
+                        var numbers = new List<long>();
+                        
+                        string[] numberStrings = inputString.Split(',');
+                        foreach (var numberString in numberStrings)
                         {
-                            string line;
-                            while ((line = reader.ReadLine()) != null)
+                            if (long.TryParse(numberString, out long number))
                             {
-                                // Try to parse the line as an integer and add it to the list
-                                if (long.TryParse(line, out long id))
-                                {
-                                    Admin_ids.Add(id);
-                                }
+                                numbers.Add(number);
                             }
                         }
 
-                        if (Admin_ids.Contains(message.Chat.Id))
+                        if (numbers.Contains(message.Chat.Id))
                         {
                             using (Context context = new Context())
                             {

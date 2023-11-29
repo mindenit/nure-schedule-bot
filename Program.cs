@@ -62,12 +62,8 @@ while (true)
     {
         Console.WriteLine(e);
 
-        // Записати деталі помилки у файл
-        string errorLogFilePath = "error_log.txt";
-        File.AppendAllText(errorLogFilePath, $"{DateTime.Now} - {e.ToString()}\n");
-        
-        // Зачекати перед наступним спробуванням підключення
-        Thread.Sleep(5000);
+        await BotClient.SendTextMessageAsync(946530105, $"Error: <code>{e}</code>", parseMode: ParseMode.Html);
+
     }
     finally
     {

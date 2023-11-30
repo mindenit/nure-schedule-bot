@@ -17,10 +17,10 @@ public class UpdateHandler
         var message = update.Message;
         TimeZoneInfo kyivTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
         CultureInfo cultureInfo = new CultureInfo("uk-UA");
-        string DonateHtml = "\n" + "<a href=\"https://t.me/nure_dev\">Канал з інфою</a> | " +
+        string DonateHtml = "\n" + "<a href=\"https://t.me/mindenit\">Канал з інфою</a> | " +
                             "<a href=\"https://send.monobank.ua/jar/5tHDuV8dfg\">Підтримати розробку</a> | " +
                             "<a href=\"https://t.me/ketronix_dev\">Адмін</a> | " +
-                            "<a href=\"https://github.com/nure-dev/nure-bot\">Код</a>" + "\n";
+                            "<a href=\"https://github.com/mindenit/nure-schedule-bot\">Код</a>" + "\n";
     await using(Context db = new Context())
         {
             if (db.Customers.Find(message.Chat.Id) == null)

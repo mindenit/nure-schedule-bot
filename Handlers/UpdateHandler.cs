@@ -447,8 +447,11 @@ public class UpdateHandler
                                 long groupCount = context.Customers.Count(c =>
                                     c.ChatType == "Group" || c.ChatType == "Supergroup");
                                 long noneCount = context.Customers.Count(c => c.ChatType == null);
+                                long teachersCount = context.Customers
+                                    .AsEnumerable()
+                                    .Count(e => e.CistName != null && e.CistName.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length == 3);
                                 bot.SendTextMessageAsync(message.Chat.Id,
-                                    $"Statistics:\nPrivate = {privateCount}\nGroup = {groupCount}\nNot Registered = {noneCount}");
+                                    $"Statistics:\nPrivate = {privateCount}\nGroup = {groupCount}\nNot Registered = {noneCount}\nTeachers = {teachersCount}");
                             }
                         }
                         else

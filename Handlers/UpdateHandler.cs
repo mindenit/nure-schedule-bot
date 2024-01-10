@@ -415,8 +415,16 @@ public class UpdateHandler
                                 List<long> chatIds = context.Customers.Select(c => c.ChatId).ToList();
                                 foreach (long chatId in chatIds)
                                 {
-                                    bot.SendTextMessageAsync(chatId, text);
-                                    Thread.Sleep(100);
+                                    try
+                                    {
+                                        bot.SendTextMessageAsync(chatId, text);
+                                        Thread.Sleep(100);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine(e);
+                                        continue;
+                                    }
                                 }
                             }
                         }

@@ -46,6 +46,7 @@ public class UpdateHandler
         }
         try
         {
+            Console.WriteLine(update);
             if (update.Type == UpdateType.Message)
             {
                 if (message is not null && message.Text is not null)
@@ -486,6 +487,21 @@ public class UpdateHandler
                             "\t <code>/next_day</code> - відправляє розклад на наступний день. \n" +
                             "\t <code>/next_week</code> - відправить розклад на наступний тиждень. \n \n",
                             parseMode: ParseMode.Html);
+                    } else if (message.Text.Contains("/info"))
+                    {
+                        using (Context context = new Context())
+                        {
+                            var chat = context.Customers.Find(message.Chat.Id);
+                            if (chat != null)
+                            {
+                                bot.SendTextMessageAsync(message.Chat.Id, 
+                                $"ChatId: {chat.ChatId}\nCistId: {chat.CistId}\nCistName: {chat.CistName}\nChatType: {chat.ChatType}\nFirstname: {chat.FirstName}\nLastName: {chat.LastName}\nUsername: {chat.Username}");
+                            }
+                            else
+                            {
+                                bot.SendTextMessageAsync(message.Chat.Id, $"No chat with ChatId {message.Chat.Id} was found.");
+                            }
+                        }
                     }
                     else
                     {

@@ -53,7 +53,6 @@ while (true)
 
         var me = await BotClient.GetMeAsync();
         Console.WriteLine($"Start listening for @{me.Username}");
-
         // Замініть цю стрічку на ваш основний код бота.
         
         Console.ReadLine();

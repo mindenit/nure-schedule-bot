@@ -7,7 +7,7 @@ namespace NureBot.Service
     {
         public static void Setup()
         {
-            if (!File.Exists("/home/artem/Documents/dotnet/nure-schedule-bot/bin/Debug/net8.0/config-bot.toml"))
+            if (!File.Exists("config-bot.toml"))
             {
                 while (true)
                 {
@@ -27,7 +27,7 @@ namespace NureBot.Service
 
                     if (tokenBot != null && dbString != null && admin1 != null && admin2 != null)
                     {
-                        using (FileStream fstream = new FileStream("/home/artem/Documents/dotnet/nure-schedule-bot/bin/Debug/net8.0/config-bot.toml", FileMode.OpenOrCreate))
+                        using (FileStream fstream = new FileStream("config-bot.toml", FileMode.OpenOrCreate))
                         {
                             string configText =
                                 String.Format(
@@ -53,7 +53,7 @@ namespace NureBot.Service
         public static string ReadBotToken()
         {
             string token;
-            using (FileStream fstream = File.OpenRead("/home/artem/Documents/dotnet/nure-schedule-bot/bin/Debug/net8.0/config-bot.toml"))
+            using (FileStream fstream = File.OpenRead("config-bot.toml"))
             {
                 byte[] buffer = new byte[fstream.Length];
                 fstream.Read(buffer, 0, buffer.Length);
@@ -69,7 +69,7 @@ namespace NureBot.Service
         public static string ReadAdmins()
         {
             string key1, key2;
-            using (FileStream fstream = File.OpenRead("/home/artem/Documents/dotnet/nure-schedule-bot/bin/Debug/net8.0/config-bot.toml"))
+            using (FileStream fstream = File.OpenRead("config-bot.toml"))
             {
                 byte[] buffer = new byte[fstream.Length];
                 fstream.Read(buffer, 0, buffer.Length);
@@ -86,7 +86,7 @@ namespace NureBot.Service
         public static string ReadDbString()
         {
             string key;
-            using (FileStream fstream = File.OpenRead("/home/artem/Documents/dotnet/nure-schedule-bot/bin/Debug/net8.0/config-bot.toml"))
+            using (FileStream fstream = File.OpenRead("config-bot.toml"))
             {
                 byte[] buffer = new byte[fstream.Length];
                 fstream.Read(buffer, 0, buffer.Length);

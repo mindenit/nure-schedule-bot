@@ -30,7 +30,7 @@ Thread dbActualizer = new Thread(() =>
 {
     while (true)
     {
-        if(DateTime.Now.Hour == 0 && DateTime.Now.Minute == 0 && DateTime.Now.Second == 0
+        if(DateTime.Now.Hour == 0 && DateTime.Now.Minute == 0 && DateTime.Now.Second == 0)
         {
             var ToDelete = new List<Customer>();
             foreach (var customer in context.Customers)

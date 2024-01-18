@@ -58,18 +58,26 @@ dbActualizer.Start();
 
 while (true)
 {
-    if (updates.Any())
+    try
     {
-        foreach (var update in updates)
+        if (updates.Any())
         {
-            HandleUpdates.Handle(update, client);
-        }
+            foreach (var update in updates)
+            {
+                Console.WriteLine(update.Message.Chat.Id);
+                HandleUpdates.Handle(update, client);
+            }
 
-        var offset = updates.Last().UpdateId + 1;
-        updates = client.GetUpdates(offset);
+            var offset = updates.Last().UpdateId + 1;
+            updates = client.GetUpdates(offset);
+        }
+        else
+        {
+            updates = client.GetUpdates();
+        }
     }
-    else
+    catch (Exception e)
     {
-        updates = client.GetUpdates();
+        client.SendMessage("-1002108311720", "Сталася помилка: \n \n <code>" + JsonConvert.SerializeObject(e)+"</code>", parseMode: "HTML");
     }
 }

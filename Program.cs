@@ -64,7 +64,7 @@ while (true)
         {
             foreach (var update in updates)
             {
-                if (update is not null)
+                if (update.Message is not null)
                 {
                     Console.WriteLine(update.Message.Chat.Id);
                     HandleUpdates.Handle(update, client);

@@ -37,8 +37,10 @@ Thread dbActualizer = new Thread(() =>
             {
                 try
                 {
-                    var message = client.SendMessage(customer.ChatId, "This chat is registered?",
+                    Thread.Sleep(300);
+                    var message = client.SendMessage(customer.ChatId, "Ми перевіряємо чи не заблокували ви нас. Все нормально.",
                         disableNotification: true);
+                    Thread.Sleep(1000);
                     client.DeleteMessage(message.Chat.Id, message.MessageId);
                 }
                 catch (Exception e)

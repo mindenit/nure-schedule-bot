@@ -78,6 +78,6 @@ while (true)
     }
     catch (Exception e)
     {
-        client.SendMessage("-1002108311720", "Сталася помилка: \n \n <code>" + JsonConvert.SerializeObject(e)+"</code>", parseMode: "HTML");
+        client.SendMessage("-1002108311720", $"Сталася помилка: \n \n <code>{JsonConvert.SerializeObject(e)}</code>", parseMode: "HTML");
     }
 }

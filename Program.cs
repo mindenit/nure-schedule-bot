@@ -64,8 +64,11 @@ while (true)
         {
             foreach (var update in updates)
             {
-                Console.WriteLine(update.Message.Chat.Id);
-                HandleUpdates.Handle(update, client);
+                if (update is not null)
+                {
+                    Console.WriteLine(update.Message.Chat.Id);
+                    HandleUpdates.Handle(update, client);
+                }
             }
 
             var offset = updates.Last().UpdateId + 1;
@@ -78,6 +81,7 @@ while (true)
     }
     catch (Exception e)
     {
+        Thread.Sleep(1000);
         client.SendMessage("-1002108311720", $"Сталася помилка: \n \n {JsonConvert.SerializeObject(e)}");
     }
 }

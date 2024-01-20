@@ -30,7 +30,10 @@ Thread dbActualizer = new Thread(() =>
 {
     while (true)
     {
-        if(DateTime.Now.Hour == 0 && DateTime.Now.Minute == 0 && DateTime.Now.Second == 0)
+        DateTime NowUTC = DateTime.UtcNow;
+        TimeZoneInfo kyivZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+        DateTime NowKyiv = TimeZoneInfo.ConvertTimeFromUtc(NowUTC, kyivZone);
+        if(NowKyiv.Hour == 0 && NowKyiv.Minute == 0 && NowKyiv.Second == 0)
         {
             var ToDelete = new List<Customer>();
             foreach (var customer in context.Customers)

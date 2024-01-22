@@ -30,15 +30,20 @@ Thread dbActualizer = new Thread(() =>
 {
     while (true)
     {
-        if(DateTime.Now.Hour == 0)
+        DateTime NowUTC = DateTime.UtcNow;
+        TimeZoneInfo kyivZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+        DateTime NowKyiv = TimeZoneInfo.ConvertTimeFromUtc(NowUTC, kyivZone);
+        if(NowKyiv.Hour == 0 && NowKyiv.Minute == 0 && NowKyiv.Second == 0)
         {
             var ToDelete = new List<Customer>();
             foreach (var customer in context.Customers)
             {
                 try
                 {
-                    var message = client.SendMessage(customer.ChatId, "This chat is registered?",
+                    Thread.Sleep(300);
+                    var message = client.SendMessage(customer.ChatId, "Ми перевіряємо чи не заблокували ви нас. Все нормально.",
                         disableNotification: true);
+                    Thread.Sleep(1000);
                     client.DeleteMessage(message.Chat.Id, message.MessageId);
                 }
                 catch (Exception e)
@@ -58,18 +63,30 @@ dbActualizer.Start();
 
 while (true)
 {
-    if (updates.Any())
+    try
     {
-        foreach (var update in updates)
+        if (updates.Any())
         {
-            HandleUpdates.Handle(update, client);
-        }
+            foreach (var update in updates)
+            {
+                if (update.Message is not null)
+                {
+                    Console.WriteLine(update.Message.Chat.Id);
+                    HandleUpdates.Handle(update, client);
+                }
+            }
 
-        var offset = updates.Last().UpdateId + 1;
-        updates = client.GetUpdates(offset);
+            var offset = updates.Last().UpdateId + 1;
+            updates = client.GetUpdates(offset);
+        }
+        else
+        {
+            updates = client.GetUpdates();
+        }
     }
-    else
+    catch (Exception e)
     {
-        updates = client.GetUpdates();
+        Thread.Sleep(1000);
+        client.SendMessage("-1002108311720", $"Сталася помилка: \n \n {JsonConvert.SerializeObject(e)}");
     }
 }

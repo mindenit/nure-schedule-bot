@@ -27,6 +27,7 @@ public class TimeService
                 TimeZoneInfo kyivZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
                 DateTime NowKyiv = TimeZoneInfo.ConvertTimeFromUtc(NowUTC, kyivZone);
                 long NowKyivStamp = (long)NowKyiv.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+
                 if (NowKyiv.Hour == 6 && NowKyiv.Minute == 0 && NowKyiv.Second == 0)
                 {
                     CistNames = db.Customers.Where(c => c.CistName != null)
@@ -64,13 +65,14 @@ public class TimeService
                     {
                         var ChatIds = db.Customers.Where(c => c.CistName == cistName)
                             .Select(c => c.ChatId).ToList();
+                        var lesson = Schedule[cistName][0];
                         foreach (var chatId in ChatIds)
                         {
                             bot.SendMessage(chatId,
-                                $"Нагадування! До пари з {Schedule[cistName][0].Subject.Title} ({Schedule[cistName][0].Type}) залишилося 5 хвилин.");
+                                $"Нагадування! До пари з \"{lesson.Subject.Title}\" ({lesson.Type}) залишилося 5 хвилин.");
                             Thread.Sleep(100);
                         }
-                        Schedule[cistName].RemoveAt(0);
+                        Schedule[cistName].Remove(lesson);
                     }
                 }
 

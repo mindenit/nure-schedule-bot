@@ -27,8 +27,14 @@ if (!context.Teachers.Any())
     TeacherParser.Init();
 }
 
-Thread thread1 = new Thread(new ThreadStart(dbService.dbActualizer(client)));
-Thread thread2 = new Thread(new ThreadStart(TimeService.LessonNotification(client)));
+Thread thread1 = new Thread(() =>
+{
+    dbService.dbActualizer(client);
+});
+Thread thread2 = new Thread(() =>
+{
+    TimeService.LessonNotification(client);
+});
 thread1.Start();
 thread2.Start();
 

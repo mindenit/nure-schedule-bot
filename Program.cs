@@ -14,56 +14,64 @@ var client = new BotClient(EnviromentManager.ReadBotToken());
 
 var updates = client.GetUpdates();
 
-EnviromentManager.Setup();
-
-var context = new Context();
-if (!context.Groups.Any())
+try
 {
-    GroupParser.Init();
-}
-
-if (!context.Teachers.Any())
-{
-    TeacherParser.Init();
-}
-
-Thread thread1 = new Thread(() =>
-{
-    dbService.dbActualizer(client);
-});
-Thread thread2 = new Thread(() =>
-{
-    TimeService.LessonNotification(client);
-});
-thread1.Start();
-thread2.Start();
-
-while (true)
-{
-    try
+    EnviromentManager.Setup();
+    
+    var context = new Context();
+    if (!context.Groups.Any())
     {
-        if (updates.Any())
+        GroupParser.Init();
+    }
+    
+    if (!context.Teachers.Any())
+    {
+        TeacherParser.Init();
+    }
+    
+    Thread thread1 = new Thread(() =>
+    {
+        dbService.dbActualizer(client);
+    });
+    Thread thread2 = new Thread(() =>
+    {
+        TimeService.LessonNotification(client);
+    });
+    thread1.Start();
+    thread2.Start();
+    
+    while (true)
+    {
+        try
         {
-            foreach (var update in updates)
+            if (updates.Any())
             {
-                if (update.Message is not null)
+                foreach (var update in updates)
                 {
-                    Console.WriteLine(update.Message.Chat.Id);
-                    HandleUpdates.Handle(update, client);
+                    if (update.Message is not null)
+                    {
+                        Console.WriteLine(update.Message.Chat.Id);
+                        HandleUpdates.Handle(update, client);
+                    }
                 }
+    
+                var offset = updates.Last().UpdateId + 1;
+                updates = client.GetUpdates(offset);
             }
-
-            var offset = updates.Last().UpdateId + 1;
-            updates = client.GetUpdates(offset);
+            else
+            {
+                updates = client.GetUpdates();
+            }
         }
-        else
+        catch (Exception e)
         {
-            updates = client.GetUpdates();
+            Thread.Sleep(1000);
+            client.SendMessage("-1002108311720", $"Сталася помилка: \n \n {JsonConvert.SerializeObject(e)}");
         }
     }
-    catch (Exception e)
-    {
-        Thread.Sleep(1000);
-        client.SendMessage("-1002108311720", $"Сталася помилка: \n \n {JsonConvert.SerializeObject(e)}");
-    }
+}
+catch (Exception ex)
+{
+    Thread.Sleep(1000);
+    client.SendMessage("-1002108311720", $"Сталася помилка: \n \n {JsonConvert.SerializeObject(ex)}");
 }

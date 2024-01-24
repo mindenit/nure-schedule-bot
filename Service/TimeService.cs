@@ -23,6 +23,7 @@ public class TimeService
             {
                 Dictionary<string, List<Event>> Schedule = new Dictionary<string, List<Event>>();
                 List<string?> CistNames = new List<string?>();
+                List<string?> ValidCistNames = new List<string?>();
                 DateTime NowUTC = DateTime.UtcNow;
                 TimeZoneInfo kyivZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
                 DateTime NowKyiv = TimeZoneInfo.ConvertTimeFromUtc(NowUTC, kyivZone);
@@ -55,24 +56,30 @@ public class TimeService
                         {
                             ScheduleEvent = ScheduleEvent.OrderBy(c => c.StartTime).ToList();
                             Schedule[cistName] = ScheduleEvent;
+                            ValidCistNames.Add(cistName);
                         }
                     }
                 }
 
-                foreach (var cistName in CistNames)
+                if (ValidCistNames != null)
                 {
-                    if ((Schedule[cistName][0].StartTime - NowKyivStamp) <= 300 && ((Schedule[cistName][0].StartTime - NowKyivStamp) > 0))
+                    foreach (var cistName in ValidCistNames)
                     {
-                        var ChatIds = db.Customers.Where(c => c.CistName == cistName)
-                            .Select(c => c.ChatId).ToList();
-                        var lesson = Schedule[cistName][0];
-                        foreach (var chatId in ChatIds)
+                        if ((Schedule[cistName][0].StartTime - NowKyivStamp) <= 300 &&
+                            ((Schedule[cistName][0].StartTime - NowKyivStamp) > 0))
                         {
-                            bot.SendMessage(chatId,
-                                $"Нагадування! До пари з \"{lesson.Subject.Title}\" ({lesson.Type}) залишилося 5 хвилин.");
-                            Thread.Sleep(100);
+                            var ChatIds = db.Customers.Where(c => c.CistName == cistName)
+                                .Select(c => c.ChatId).ToList();
+                            var lesson = Schedule[cistName][0];
+                            foreach (var chatId in ChatIds)
+                            {
+                                bot.SendMessage(chatId,
+                                    $"Нагадування! До пари з \"{lesson.Subject.Title}\" ({lesson.Type}) залишилося 5 хвилин.");
+                                Thread.Sleep(100);
+                            }
+
+                            Schedule[cistName].Remove(lesson);
                         }
-                        Schedule[cistName].Remove(lesson);
                     }
                 }
 

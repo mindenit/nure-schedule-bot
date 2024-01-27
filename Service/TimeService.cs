@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using NureBot.Classes;
 using NureBot.Contexts;
 using NureBot.Parsers;
@@ -17,7 +18,9 @@ public class TimeService
 
     public static void LessonNotification(BotClient bot)
     {
-        while (true)
+        try
+        {
+            while (true)
         {
             using (Context db = new Context())
             {
@@ -77,6 +80,12 @@ public class TimeService
                 }
 
             }
+        }
+        }
+        catch (Exception e)
+        {
+            Thread.Sleep(1000);
+            bot.SendMessage("-1002108311720", $"Сталася помилка: \n \n {JsonConvert.SerializeObject(e)}");
         }
     }
 }

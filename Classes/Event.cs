@@ -4,7 +4,6 @@ public class Event
 {
     public int NumberPair { get; set; }
     public Subject? Subject { get; set; }
-    //public DateOnly Date { get; set; }
     public long StartTime { get; set; }
     public long EndTime { get; set; }
     public string? Type { get; set; }

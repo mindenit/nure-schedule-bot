@@ -80,8 +80,11 @@ public class TimeService
                                         $"Нагадування! До пари з \"{lesson.Subject.Title}\" ({lesson.Type}) залишилося 5 хвилин.");
                                     Thread.Sleep(100);
                                 }
-
                                 Schedule[cistName].Remove(lesson);
+                                if (Schedule[cistName] == null)
+                                {
+                                    ValidCistNames.Remove(cistName);
+                                }
                             }
                         }
                     }

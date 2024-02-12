@@ -55,7 +55,7 @@ public class TimeService
                             long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
                             long endTime = startTime + 86400;
                             List<Event> ScheduleEvent = EventParser.GetSchedule(Type, Cistid, startTime, endTime);
-                            if ((ScheduleEvent != null) || (ScheduleEvent.Count != 0))
+                            if ((ScheduleEvent != null) && (ScheduleEvent.Count != 0))
                             {
                                 ScheduleEvent = ScheduleEvent.OrderBy(c => c.StartTime).ToList();
                                 Schedule[cistName] = ScheduleEvent;

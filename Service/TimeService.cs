@@ -54,7 +54,7 @@ public class TimeService
                             DateTime startDateTime = TimeZoneInfo.ConvertTime(DateTime.Now.Date, kyivZone);
                             long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
                             long endTime = startTime + 86400;
-                            List<Event> ScheduleEvent = EventParser.GetSchedule(Type, Cistid, startTime, endTime);
+                            List<Event>? ScheduleEvent = EventParser.GetSchedule(Type, Cistid, startTime, endTime);
                             if ((ScheduleEvent != null) && (ScheduleEvent.Count != 0))
                             {
                                 ScheduleEvent = ScheduleEvent.OrderBy(c => c.StartTime).ToList();
@@ -77,8 +77,8 @@ public class TimeService
                                 foreach (var chatId in ChatIds)
                                 {
                                     bot.SendMessage(chatId,
-                                        $"Нагадування! До пари з \"{lesson.Subject.Title}\" ({lesson.Type}) залишилося 5 хвилин.");
-                                    Thread.Sleep(100);
+                                        $"Нагадування! До пари з \"{lesson.Subject.Title}\" ({lesson.Type}) залишилося менше 5 хвилин.");
+                                    Thread.Sleep(500);
                                 }
                                 Schedule[cistName].Remove(lesson);
                                 if (Schedule[cistName] == null)

@@ -30,9 +30,7 @@ try
     }
     
     Thread thread1 = new Thread(() => dbService.dbActualizer(client));
-    Thread thread2 = new Thread(() => TimeService.LessonNotification(client));
     thread1.Start();
-    thread2.Start();
     
     while (true)
     {

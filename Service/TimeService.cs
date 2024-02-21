@@ -78,7 +78,7 @@ public class TimeService
                                 {
                                     bot.SendMessage(chatId,
                                         $"Нагадування! До пари з \"{lesson.Subject.Title}\" ({lesson.Type}) залишилося менше 5 хвилин.");
-                                    Thread.Sleep(500);
+                                    Thread.Sleep(1000);
                                 }
                                 Schedule[cistName].Remove(lesson);
                                 if (Schedule[cistName] == null)

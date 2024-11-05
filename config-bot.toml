@@ -1,0 +1,4 @@
+botToken = '6077780376:AAHmm1ynOrSQs0ZYamFNgYkSKfFfpP1HZWw'
+dbString = 'Host=db;Port=5432;Database=bot;Username=postgres;Password=fast;'
+admin1 = '946530105'
+admin2 = '443769648'

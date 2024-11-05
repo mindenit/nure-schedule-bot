@@ -4,8 +4,6 @@ services:
   telegram-bot:
     build: .
     container_name: telegram_bot
-    volumes:
-      - ./config-bot.toml:/app/config-bot.toml
     depends_on:
       - db
     restart: always

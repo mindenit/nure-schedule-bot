@@ -9,7 +9,7 @@ namespace Nurebot;
 
 public class dbService
 {
-    public static void dbActualizer(BotClient client)
+    public static void dbActualizer(TelegramBotClient client)
     {
         var context = new Context();
         while (true)

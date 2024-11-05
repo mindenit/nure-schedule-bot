@@ -6,14 +6,14 @@ namespace NureBot.Handlers
 {
     public class NewMemberHandler
     {
-        public static void HandleNewMember(BotClient bot, User[] users, long ChatId)
+        public static void HandleNewMember(TelegramBotClient bot, User[] users, long ChatId)
         {
             var me = bot.GetMe();
             foreach (var user in users)
             {
                 if (user.Id == me.Id)
                 {
-                    bot.SendChatAction(ChatId, ChatAction.Typing);
+                    bot.SendChatAction(ChatId, ChatActions.Typing);
                     bot.SendMessage(
                         ChatId,
                         "Цей бот має низку команд, за допомогою яких ви можете отримати розклад для себе, " +

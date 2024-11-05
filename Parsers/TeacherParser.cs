@@ -22,7 +22,7 @@ public class TeacherParser
         {
             try
             {
-                HttpResponseMessage Response = httpClient.GetAsync($"https://api.mindenit.tech/teachers").Result;
+                HttpResponseMessage Response = httpClient.GetAsync($"https://api.mindenit.org/lists/teachers").Result;
                 if (Response.IsSuccessStatusCode)
                 {
                     return Response.Content.ReadAsStringAsync().Result;

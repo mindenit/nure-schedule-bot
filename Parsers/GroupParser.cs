@@ -22,7 +22,7 @@ public class GroupParser
         {
             try
             {
-                HttpResponseMessage Response = httpClient.GetAsync($"https://api.mindenit.tech/groups").Result;
+                HttpResponseMessage Response = httpClient.GetAsync($"https://api.mindenit.org/lists/groups").Result;
                 if (Response.IsSuccessStatusCode)
                 {
                     return Response.Content.ReadAsStringAsync().Result;

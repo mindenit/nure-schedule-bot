@@ -53,6 +53,11 @@ namespace NureBot.Service
         public static string ReadBotToken()
         {
             string token;
+            if (!File.Exists("config-bot.toml"))
+            {
+                Setup();
+            }
+
             using (FileStream fstream = File.OpenRead("config-bot.toml"))
             {
                 byte[] buffer = new byte[fstream.Length];

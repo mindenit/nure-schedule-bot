@@ -6,12 +6,13 @@ using NureBot.Parsers;
 using NureBot.Service;
 using Telegram.BotAPI;
 using Telegram.BotAPI.AvailableMethods;
+using Telegram.BotAPI.AvailableTypes;
 
 namespace NureBot.Handlers;
 
 public class HandleUpdates
 {
-    public static void Handle(Update update, BotClient bot)
+    public static void Handle(Update update, TelegramBotClient bot)
     {
         var message = update.Message;
         TimeZoneInfo kyivTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
@@ -45,151 +46,87 @@ public class HandleUpdates
 
         try
         {
-            if (update.Type == UpdateType.Message)
+            if (message is not null && message.Text is not null)
             {
-                if (message is not null && message.Text is not null)
+                string[] words = message.Text.Split();
+                if (message.Text.Contains("/choose"))
                 {
-                    string[] words = message.Text.Split();
-                    if (message.Text.Contains("/choose"))
+                    if (words.Length != 1)
                     {
-                        if (words.Length != 1)
+                        try
                         {
-                            try
+                            using (Context context = new Context())
                             {
-                                using (Context context = new Context())
-                                {
-                                    var existingCustomer = context.Customers.Find(message.Chat.Id);
+                                var existingCustomer = context.Customers.Find(message.Chat.Id);
 
-                                    if (words.Length == 2)
+                                if (words.Length == 2)
+                                {
+                                    if (existingCustomer.ChatType == null)
                                     {
-                                        if (existingCustomer.ChatType == null)
-                                        {
-                                            bot.SendChatAction(message.Chat.Id, ChatAction.Typing);
-                                            existingCustomer.CistName = context.Groups.ToList()
-                                                .Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
-                                            existingCustomer.CistId = context.Groups.ToList().Find(x =>
-                                                x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
-                                            existingCustomer.ChatType = message.Chat.Type.ToString();
-                                            bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
-                                        }
-                                        else
-                                        {
-                                            existingCustomer.CistName = context.Groups.ToList()
-                                                .Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
-                                            existingCustomer.CistId = context.Groups.ToList()
-                                                .Find(x => x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
-                                            bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
-                                        }
-                                    }
-                                    else if (words.Length == 4)
-                                    {
-                                        string SNM = words[1] + " " + words[2][0] + ". " + words[3][0] + ".";
-                                        if (existingCustomer.ChatType == null)
-                                        {
-                                            bot.SendChatAction(message.Chat.Id, ChatAction.Typing);
-                                            existingCustomer.CistName = context.Teachers.ToList()
-                                                .Find(x => x.ShortName.ToUpper() == SNM.ToUpper()).ShortName;
-                                            existingCustomer.CistId = context.Teachers.ToList().Find(x =>
-                                                x.ShortName.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
-                                            existingCustomer.ChatType = message.Chat.Type.ToString();
-                                            bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
-                                        }
-                                        else
-                                        {
-                                            existingCustomer.CistName = context.Teachers.ToList()
-                                                .Find(x => x.ShortName.ToUpper() == SNM.ToUpper()).ShortName;
-                                            existingCustomer.CistId = context.Teachers.ToList()
-                                                .Find(x => x.ShortName.ToUpper() == existingCustomer.CistName.ToUpper())
-                                                .Id;
-                                            bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
-                                        }
+                                        bot.SendChatAction(message.Chat.Id, ChatActions.Typing);
+                                        existingCustomer.CistName = context.Groups.ToList()
+                                            .Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
+                                        existingCustomer.CistId = context.Groups.ToList().Find(x =>
+                                            x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
+                                        existingCustomer.ChatType = message.Chat.Type.ToString();
+                                        bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
                                     }
                                     else
                                     {
-                                        bot.SendMessage(message.Chat.Id, $"Вибачте, але назва вказана неправильно.");
+                                        existingCustomer.CistName = context.Groups.ToList()
+                                            .Find(x => x.Name.ToUpper() == words[1].ToUpper()).Name;
+                                        existingCustomer.CistId = context.Groups.ToList()
+                                            .Find(x => x.Name.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
+                                        bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
                                     }
-
-                                    context.SaveChanges();
                                 }
-                            }
-                            catch (Exception e)
-                            {
-                                bot.SendMessage(message.Chat.Id, $"Вибачте, але назва вказана неправильно.");
-                                Console.WriteLine($"Error: {e}");
-                            }
-                        }
-                        else
-                        {
-                            bot.SendMessage(message.Chat.Id, $"Вибачте, але нічого не вказано");
-                        }
-                    }
-                    else if (message.Text.Contains("/day"))
-                    {
-                        using (Context context = new Context())
-                        {
-                            if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
-                            {
-                                string CistName = context.Customers.ToList()
-                                    .Find(x => x.ChatId == message.Chat.Id).CistName;
-                                string Type;
-                                if (CistName.Split().Length == 1)
+                                else if (words.Length == 4)
                                 {
-                                    Type = "group";
-                                }
-                                else
-                                {
-                                    Type = "teacher";
-                                }
-
-                                DateTime startDateTime = TimeZoneInfo.ConvertTime(DateTime.Now.Date, kyivTimeZone);
-                                long? Cistid = context.Customers.ToList()
-                                    .Find(x => x.ChatId == message.Chat.Id).CistId;
-                                long startTime =
-                                    (long)startDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-                                long endTime = startTime + 86400;
-                                List<Event> scheduleEvent =
-                                    EventParser.GetSchedule(Type, Cistid, startTime, endTime);
-                                string TextDay = $"Розклад на {startDateTime.ToString("dd.MM.yyyy")}:\n";
-                                if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
-                                {
-                                    TextDay += "Пар нема. Відпочивайте!\n";
-                                }
-                                else
-                                {
-                                    scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
-                                    foreach (var Event in scheduleEvent)
+                                    string SNM = words[1] + " " + words[2][0] + ". " + words[3][0] + ".";
+                                    if (existingCustomer.ChatType == null)
                                     {
-                                        DateTime Start = TimeZoneInfo.ConvertTime(
-                                            TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
-                                        DateTime End = TimeZoneInfo.ConvertTime(
-                                            TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
-                                        string Teacher;
-                                        if (Event.Teachers.Count == 0)
-                                        {
-                                            Teacher = "Не визначено";
-                                        }
-                                        else
-                                        {
-                                            Teacher = Event.Teachers.First().ShortName;
-                                        }
-
-                                        TextDay +=
-                                            $"{Start.ToString("HH:mm")} - {End.ToString("HH:mm")} | <b> {Event.Subject.Brief} - {Event.Type} </b> | {Teacher}\n";
+                                        bot.SendChatAction(message.Chat.Id, ChatActions.Typing);
+                                        existingCustomer.CistName = context.Teachers.ToList()
+                                            .Find(x => x.ShortName.ToUpper() == SNM.ToUpper()).ShortName;
+                                        existingCustomer.CistId = context.Teachers.ToList().Find(x =>
+                                            x.ShortName.ToUpper() == existingCustomer.CistName.ToUpper()).Id;
+                                        existingCustomer.ChatType = message.Chat.Type.ToString();
+                                        bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
+                                    }
+                                    else
+                                    {
+                                        existingCustomer.CistName = context.Teachers.ToList()
+                                            .Find(x => x.ShortName.ToUpper() == SNM.ToUpper()).ShortName;
+                                        existingCustomer.CistId = context.Teachers.ToList()
+                                            .Find(x => x.ShortName.ToUpper() == existingCustomer.CistName.ToUpper())
+                                            .Id;
+                                        bot.SendMessage(message.Chat.Id, $"Дякую за реєстрацію!");
                                     }
                                 }
+                                else
+                                {
+                                    bot.SendMessage(message.Chat.Id, $"Вибачте, але назва вказана неправильно.");
+                                }
 
-                                bot.SendMessage(message.Chat.Id, TextDay + DonateHtml, parseMode: "HTML",
-                                    disableWebPagePreview: true);
-                            }
-                            else
-                            {
-                                bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
+                                context.SaveChanges();
                             }
                         }
+                        catch (Exception e)
+                        {
+                            bot.SendMessage(message.Chat.Id, $"Вибачте, але назва вказана неправильно.");
+                            Console.WriteLine($"Error: {e}");
+                        }
                     }
-                    else if (message.Text.Contains("/week"))
+                    else
                     {
-                        using (Context context = new Context())
+                        bot.SendMessage(message.Chat.Id, $"Вибачте, але нічого не вказано");
+                    }
+                }
+                else if (message.Text.Contains("/day"))
+                {
+                    using (Context context = new Context())
+                    {
+                        if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
                         {
                             string CistName = context.Customers.ToList()
                                 .Find(x => x.ChatId == message.Chat.Id).CistName;
@@ -203,100 +140,96 @@ public class HandleUpdates
                                 Type = "teacher";
                             }
 
-                            if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
+                            DateTime startDateTime = TimeZoneInfo.ConvertTime(DateTime.Now.Date, kyivTimeZone);
+                            long? Cistid = context.Customers.ToList()
+                                .Find(x => x.ChatId == message.Chat.Id).CistId;
+                            long startTime =
+                                (long)startDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+                            long endTime = startTime + 86400;
+                            List<Event> scheduleEvent =
+                                EventParser.GetSchedule(Type, Cistid, startTime, endTime);
+                            string TextDay = $"Розклад на {startDateTime.ToString("dd.MM.yyyy")}:\n";
+                            if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                             {
-                                long? Cistid = context.Customers.ToList()
-                                    .Find(x => x.ChatId == message.Chat.Id).CistId;
-                                int dayValue = ((int)DateTime.Today.DayOfWeek == 0) ? 7 : (int)DateTime.Now.DayOfWeek;
-                                DateTime mondayDateTime = TimeZoneInfo.ConvertTime(
-                                    DateTime.Today.AddDays((int)DayOfWeek.Monday - dayValue),
-                                    kyivTimeZone);
-                                int weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(mondayDateTime,
-                                    CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule,
-                                    CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
-                                string weekText =
-                                    $"Розклад {mondayDateTime.ToString("dd.MM")} - {mondayDateTime.AddDays(6).ToString("dd.MM")} ({weekOfYear}):\n";
-                                for (int i = 0; i < 6; i++)
-                                {
-                                    DateTime startDateTime = mondayDateTime.AddDays(i);
-                                    DateTime endDateTime = mondayDateTime.AddDays(i + 1);
-                                    long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1))
-                                        .TotalSeconds;
-                                    long endTime = startTime + 86400;
-                                    List<Event> scheduleEvent =
-                                        EventParser.GetSchedule(Type, Cistid, startTime, endTime);
-                                    string TextDay =
-                                        $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
-                                    TextDay = cultureInfo.TextInfo.ToTitleCase(TextDay);
-                                    if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
-                                    {
-                                        weekText += TextDay + "Пар нема. Відпочивайте!\n\n";
-                                    }
-                                    else
-                                    {
-                                        scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
-                                        foreach (var Event in scheduleEvent)
-                                        {
-                                            DateTime Start = TimeZoneInfo.ConvertTime(
-                                                TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
-                                            DateTime End = TimeZoneInfo.ConvertTime(
-                                                TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
-                                            string Teacher;
-                                            if (Event.Teachers.Count == 0)
-                                            {
-                                                Teacher = "Не визначено";
-                                            }
-                                            else
-                                            {
-                                                Teacher = Event.Teachers.First().ShortName;
-                                            }
-
-                                            TextDay +=
-                                                $"{Start.ToString("HH:mm")} - {End.ToString("HH:mm")} | <b> {Event.Subject.Brief} - {Event.Type} </b> | {Teacher}\n";
-                                        }
-
-                                        weekText += TextDay + "\n";
-                                    }
-                                }
-
-                                bot.SendMessage(message.Chat.Id, weekText + DonateHtml, parseMode: "HTML",
-                                    disableWebPagePreview: true);
+                                TextDay += "Пар нема. Відпочивайте!\n";
                             }
                             else
                             {
-                                bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
+                                scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
+                                foreach (var Event in scheduleEvent)
+                                {
+                                    DateTime Start = TimeZoneInfo.ConvertTime(
+                                        TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
+                                    DateTime End = TimeZoneInfo.ConvertTime(
+                                        TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
+                                    string Teacher;
+                                    if (Event.Teachers.Count == 0)
+                                    {
+                                        Teacher = "Не визначено";
+                                    }
+                                    else
+                                    {
+                                        Teacher = Event.Teachers.First().ShortName;
+                                    }
+
+                                    TextDay +=
+                                        $"{Start.ToString("HH:mm")} - {End.ToString("HH:mm")} | <b> {Event.Subject.Brief} - {Event.Type} </b> | {Teacher}\n";
+                                }
                             }
+
+                            bot.SendMessage(message.Chat.Id, TextDay + DonateHtml, parseMode: "HTML",
+                                linkPreviewOptions: new LinkPreviewOptions(){IsDisabled = true});
+                        }
+                        else
+                        {
+                            bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
                         }
                     }
-                    else if (message.Text.Contains("/next_day"))
+                }
+                else if (message.Text.Contains("/week"))
+                {
+                    using (Context context = new Context())
                     {
-                        using (Context context = new Context())
+                        string CistName = context.Customers.ToList()
+                            .Find(x => x.ChatId == message.Chat.Id).CistName;
+                        string Type;
+                        if (CistName.Split().Length == 1)
                         {
-                            if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
-                            {
-                                string CistName = context.Customers.ToList()
-                                    .Find(x => x.ChatId == message.Chat.Id).CistName;
-                                string Type;
-                                if (CistName.Split().Length == 1)
-                                {
-                                    Type = "group";
-                                }
-                                else
-                                {
-                                    Type = "teacher";
-                                }
+                            Type = "group";
+                        }
+                        else
+                        {
+                            Type = "teacher";
+                        }
 
-                                DateTime startDateTime = TimeZoneInfo.ConvertTime(DateTime.Today.AddDays(1),
-                                    kyivTimeZone);
-                                long? Cistid = context.Customers.ToList()
-                                    .Find(x => x.ChatId == message.Chat.Id).CistId;
-                                long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+                        if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
+                        {
+                            long? Cistid = context.Customers.ToList()
+                                .Find(x => x.ChatId == message.Chat.Id).CistId;
+                            int dayValue = ((int)DateTime.Today.DayOfWeek == 0) ? 7 : (int)DateTime.Now.DayOfWeek;
+                            DateTime mondayDateTime = TimeZoneInfo.ConvertTime(
+                                DateTime.Today.AddDays((int)DayOfWeek.Monday - dayValue),
+                                kyivTimeZone);
+                            int weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(mondayDateTime,
+                                CultureInfo.CurrentCulture.DateTimeFormat.CalendarWeekRule,
+                                CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
+                            string weekText =
+                                $"Розклад {mondayDateTime.ToString("dd.MM")} - {mondayDateTime.AddDays(6).ToString("dd.MM")} ({weekOfYear}):\n";
+                            for (int i = 0; i < 6; i++)
+                            {
+                                DateTime startDateTime = mondayDateTime.AddDays(i);
+                                DateTime endDateTime = mondayDateTime.AddDays(i + 1);
+                                long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1))
+                                    .TotalSeconds;
                                 long endTime = startTime + 86400;
-                                List<Event> scheduleEvent = EventParser.GetSchedule(Type, Cistid, startTime, endTime);
-                                string TextDay = $"Розклад на {startDateTime.ToString("dd.MM.yyyy")}:\n";
+                                List<Event> scheduleEvent =
+                                    EventParser.GetSchedule(Type, Cistid, startTime, endTime);
+                                string TextDay =
+                                    $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
+                                TextDay = cultureInfo.TextInfo.ToTitleCase(TextDay);
                                 if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                                 {
-                                    TextDay += "Пар нема. Відпочивайте!\n";
+                                    weekText += TextDay + "Пар нема. Відпочивайте!\n\n";
                                 }
                                 else
                                 {
@@ -320,229 +253,292 @@ public class HandleUpdates
                                         TextDay +=
                                             $"{Start.ToString("HH:mm")} - {End.ToString("HH:mm")} | <b> {Event.Subject.Brief} - {Event.Type} </b> | {Teacher}\n";
                                     }
-                                }
 
-                                bot.SendMessage(message.Chat.Id, TextDay + DonateHtml, parseMode: "HTML",
-                                    disableWebPagePreview: true);
+                                    weekText += TextDay + "\n";
+                                }
+                            }
+
+                            bot.SendMessage(message.Chat.Id, weekText + DonateHtml, parseMode: "HTML",
+                                linkPreviewOptions: new LinkPreviewOptions(){IsDisabled = true});
+                        }
+                        else
+                        {
+                            bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
+                        }
+                    }
+                }
+                else if (message.Text.Contains("/next_day"))
+                {
+                    using (Context context = new Context())
+                    {
+                        if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
+                        {
+                            string CistName = context.Customers.ToList()
+                                .Find(x => x.ChatId == message.Chat.Id).CistName;
+                            string Type;
+                            if (CistName.Split().Length == 1)
+                            {
+                                Type = "group";
                             }
                             else
                             {
-                                bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
+                                Type = "teacher";
                             }
-                        }
-                    }
-                    else if (message.Text.Contains("/next_week"))
-                    {
-                        using (Context context = new Context())
-                        {
-                            if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
+
+                            DateTime startDateTime = TimeZoneInfo.ConvertTime(DateTime.Today.AddDays(1),
+                                kyivTimeZone);
+                            long? Cistid = context.Customers.ToList()
+                                .Find(x => x.ChatId == message.Chat.Id).CistId;
+                            long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+                            long endTime = startTime + 86400;
+                            List<Event> scheduleEvent = EventParser.GetSchedule(Type, Cistid, startTime, endTime);
+                            string TextDay = $"Розклад на {startDateTime.ToString("dd.MM.yyyy")}:\n";
+                            if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                             {
-                                string CistName = context.Customers.ToList()
-                                    .Find(x => x.ChatId == message.Chat.Id).CistName;
-                                string Type;
-                                if (CistName.Split().Length == 1)
+                                TextDay += "Пар нема. Відпочивайте!\n";
+                            }
+                            else
+                            {
+                                scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
+                                foreach (var Event in scheduleEvent)
                                 {
-                                    Type = "group";
-                                }
-                                else
-                                {
-                                    Type = "teacher";
-                                }
-
-                                long? Cistid = context.Customers.ToList()
-                                    .Find(x => x.ChatId == message.Chat.Id).CistId;
-                                int dayValue = ((int)DateTime.Today.DayOfWeek == 0) ? 7 : (int)DateTime.Now.DayOfWeek;
-                                DateTime mondayDateTime = TimeZoneInfo.ConvertTime(
-                                    DateTime.Today.AddDays((int)DayOfWeek.Monday - dayValue).AddDays(7),
-                                    kyivTimeZone);
-
-                                int weekOfYear = cultureInfo.Calendar.GetWeekOfYear(mondayDateTime,
-                                    cultureInfo.DateTimeFormat.CalendarWeekRule,
-                                    cultureInfo.DateTimeFormat.FirstDayOfWeek);
-                                string weekText =
-                                    $"Розклад {mondayDateTime.ToString("dd.MM")} - {mondayDateTime.AddDays(6).ToString("dd.MM")} ({weekOfYear}):\n";
-                                for (int i = 0; i < 6; i++)
-                                {
-                                    DateTime startDateTime = mondayDateTime.AddDays(i);
-                                    DateTime endDateTime = mondayDateTime.AddDays(i + 1);
-                                    long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1))
-                                        .TotalSeconds;
-                                    long endTime = startTime + 86400;
-                                    List<Event> scheduleEvent =
-                                        EventParser.GetSchedule(Type, Cistid, startTime, endTime);
-                                    string TextDay =
-                                        $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
-                                    TextDay = cultureInfo.TextInfo.ToTitleCase(TextDay);
-                                    if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
+                                    DateTime Start = TimeZoneInfo.ConvertTime(
+                                        TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
+                                    DateTime End = TimeZoneInfo.ConvertTime(
+                                        TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
+                                    string Teacher;
+                                    if (Event.Teachers.Count == 0)
                                     {
-                                        weekText += TextDay + "Пар нема. Відпочивайте!\n\n";
+                                        Teacher = "Не визначено";
                                     }
                                     else
                                     {
-                                        scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
-                                        foreach (var Event in scheduleEvent)
-                                        {
-                                            DateTime Start = TimeZoneInfo.ConvertTime(
-                                                TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
-                                            DateTime End = TimeZoneInfo.ConvertTime(
-                                                TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
-                                            string Teacher;
-                                            if (Event.Teachers.Count == 0)
-                                            {
-                                                Teacher = "Не визначено";
-                                            }
-                                            else
-                                            {
-                                                Teacher = Event.Teachers.First().ShortName;
-                                            }
-
-                                            TextDay +=
-                                                $"{Start.ToString("HH:mm")} - {End.ToString("HH:mm")} | <b> {Event.Subject.Brief} - {Event.Type} </b> | {Teacher}\n";
-                                        }
-
-                                        weekText += TextDay + "\n";
+                                        Teacher = Event.Teachers.First().ShortName;
                                     }
-                                }
 
-                                bot.SendMessage(message.Chat.Id, weekText + DonateHtml,
-                                    parseMode: "HTML", disableWebPagePreview: true);
+                                    TextDay +=
+                                        $"{Start.ToString("HH:mm")} - {End.ToString("HH:mm")} | <b> {Event.Subject.Brief} - {Event.Type} </b> | {Teacher}\n";
+                                }
+                            }
+
+                            bot.SendMessage(message.Chat.Id, TextDay + DonateHtml, parseMode: "HTML",
+                                linkPreviewOptions: new LinkPreviewOptions(){IsDisabled = true});
+                        }
+                        else
+                        {
+                            bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
+                        }
+                    }
+                }
+                else if (message.Text.Contains("/next_week"))
+                {
+                    using (Context context = new Context())
+                    {
+                        if (context.Customers.ToList().Find(x => x.ChatId == message.Chat.Id).ChatType != null)
+                        {
+                            string CistName = context.Customers.ToList()
+                                .Find(x => x.ChatId == message.Chat.Id).CistName;
+                            string Type;
+                            if (CistName.Split().Length == 1)
+                            {
+                                Type = "group";
                             }
                             else
                             {
-                                bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
+                                Type = "teacher";
                             }
-                        }
-                    }
-                    else if (message.Text.Contains("/notify"))
-                    {
-                        string inputString = EnviromentManager.ReadAdmins();
-                        var numbers = new List<long>();
 
-                        string[] numberStrings = inputString.Split(',');
-                        foreach (var numberString in numberStrings)
-                        {
-                            if (long.TryParse(numberString, out long number))
+                            long? Cistid = context.Customers.ToList()
+                                .Find(x => x.ChatId == message.Chat.Id).CistId;
+                            int dayValue = ((int)DateTime.Today.DayOfWeek == 0) ? 7 : (int)DateTime.Now.DayOfWeek;
+                            DateTime mondayDateTime = TimeZoneInfo.ConvertTime(
+                                DateTime.Today.AddDays((int)DayOfWeek.Monday - dayValue).AddDays(7),
+                                kyivTimeZone);
+
+                            int weekOfYear = cultureInfo.Calendar.GetWeekOfYear(mondayDateTime,
+                                cultureInfo.DateTimeFormat.CalendarWeekRule,
+                                cultureInfo.DateTimeFormat.FirstDayOfWeek);
+                            string weekText =
+                                $"Розклад {mondayDateTime.ToString("dd.MM")} - {mondayDateTime.AddDays(6).ToString("dd.MM")} ({weekOfYear}):\n";
+                            for (int i = 0; i < 6; i++)
                             {
-                                numbers.Add(number);
-                            }
-                        }
-
-
-                        if (numbers.Contains(message.Chat.Id))
-                        {
-                            using (Context context = new Context())
-                            {
-                                string text = message.Text.Replace("/notify ", "");
-                                List<long> chatIds = context.Customers.Select(c => c.ChatId).ToList();
-                                foreach (long chatId in chatIds)
+                                DateTime startDateTime = mondayDateTime.AddDays(i);
+                                DateTime endDateTime = mondayDateTime.AddDays(i + 1);
+                                long startTime = (long)startDateTime.Subtract(new DateTime(1970, 1, 1))
+                                    .TotalSeconds;
+                                long endTime = startTime + 86400;
+                                List<Event> scheduleEvent =
+                                    EventParser.GetSchedule(Type, Cistid, startTime, endTime);
+                                string TextDay =
+                                    $"{startDateTime.ToString("dd.MM.yyyy")} ({startDateTime.ToString("dddd", cultureInfo)}):\n";
+                                TextDay = cultureInfo.TextInfo.ToTitleCase(TextDay);
+                                if ((scheduleEvent.Count == 0) || (scheduleEvent == null))
                                 {
-                                    try
+                                    weekText += TextDay + "Пар нема. Відпочивайте!\n\n";
+                                }
+                                else
+                                {
+                                    scheduleEvent = scheduleEvent.OrderBy(c => c.StartTime).ToList();
+                                    foreach (var Event in scheduleEvent)
                                     {
-                                        bot.SendMessage(chatId, text);
-                                        Thread.Sleep(100);
+                                        DateTime Start = TimeZoneInfo.ConvertTime(
+                                            TimeService.UnixTimeStampToDateTime(Event.StartTime), kyivTimeZone);
+                                        DateTime End = TimeZoneInfo.ConvertTime(
+                                            TimeService.UnixTimeStampToDateTime(Event.EndTime), kyivTimeZone);
+                                        string Teacher;
+                                        if (Event.Teachers.Count == 0)
+                                        {
+                                            Teacher = "Не визначено";
+                                        }
+                                        else
+                                        {
+                                            Teacher = Event.Teachers.First().ShortName;
+                                        }
+
+                                        TextDay +=
+                                            $"{Start.ToString("HH:mm")} - {End.ToString("HH:mm")} | <b> {Event.Subject.Brief} - {Event.Type} </b> | {Teacher}\n";
                                     }
-                                    catch (Exception e)
-                                    {
-                                        Console.WriteLine(e);
-                                        continue;
-                                    }
+
+                                    weekText += TextDay + "\n";
                                 }
                             }
+
+                            bot.SendMessage(message.Chat.Id, weekText + DonateHtml,
+                                parseMode: "HTML", linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true });
                         }
                         else
                         {
-                            bot.SendMessage(message.Chat.Id,
-                                "Вибачте, але ви не маєте доступ до цієї команди");
+                            bot.SendMessage(message.Chat.Id, "Вибачте, але ви не зареєструвались");
                         }
                     }
-                    else if (message.Text.Contains("/statistics"))
-                    {
-                        
-                        
-                        string inputString = EnviromentManager.ReadAdmins();
-                        var numbers = new List<long>();
+                }
+                else if (message.Text.Contains("/notify"))
+                {
+                    string inputString = EnviromentManager.ReadAdmins();
+                    var numbers = new List<long>();
 
-                        string[] numberStrings = inputString.Split(',');
-                        foreach (var numberString in numberStrings)
-                        {
-                            if (long.TryParse(numberString, out long number))
-                            {
-                                numbers.Add(number);
-                            }
-                        }
-
-                        if (numbers.Contains(message.Chat.Id))
-                        {
-                            using (Context context = new Context())
-                            {
-                                long privateCount = context.Customers.Count(c => c.ChatType == "Private");
-                                long groupCount = context.Customers.Count(c =>
-                                    c.ChatType == "Group" || c.ChatType == "Supergroup");
-                                long noneCount = context.Customers.Count(c => c.ChatType == null);
-                                long teachersCount = context.Customers
-                                    .AsEnumerable()
-                                    .Count(e => e.CistName != null && e.CistName.Split(new char[] { ' ', '\t' },
-                                        StringSplitOptions.RemoveEmptyEntries).Length == 3);
-                                bot.SendMessage(message.Chat.Id,
-                                    $"Statistics:\nPrivate = {privateCount}\nGroup = {groupCount}\nNot Registered = {noneCount}\nTeachers = {teachersCount}");
-                            }
-                        }
-                        else
-                        {
-                            bot.SendMessage(message.Chat.Id,
-                                "Вибачте, але ви не маєте доступ до цієї команди");
-                        }
-                    }
-                    else if (message.Text.Contains("/help"))
+                    string[] numberStrings = inputString.Split(',');
+                    foreach (var numberString in numberStrings)
                     {
-                        bot.SendChatAction(message.Chat.Id, ChatAction.Typing);
-                        bot.SendMessage(
-                            message.Chat.Id,
-                            "Цей бот має низку команд, за допомогою яких ви можете отримати розклад для себе, " +
-                            "і своєї групи. Нижче буде список цих команд, із коротким описом, і прикладом. \n \n" +
-                            "Список команд бота: \n \n" +
-                            "\t <code>/choose group</code> - зміна групи у чаті, замість group треба написати назву вашої групи або ПІБ викладача. " +
-                            "Наприклад: <code>/choose КІУКІ-22-7</code>, <code>/choose кіукі-22-7</code>, <code>/choose Кулак Е. М.</code>, <code>/choose Кулак Ельвіра Миколаївна</code> і тд.\n" +
-                            "Увага! Назву бот розуміє лише якщо та була введена українською, через те шо він звіряє назву із реєстром на сайті cist.nure.ua." +
-                            " Якщо у вас виникла помилка зміни групи, перевірте щоб назва була українською мовою, і відповідала тій що на cist.nure.ua." +
-                            " Також після назви не пишіть нічого, інакше бот не зрозуміє.\n" +
-                            "\t <code>/help</code> - вам відправиться це повідомлення. \n" +
-                            "\t <code>/day</code> - вам відправиться розклад для вашої групи на поточний день. \n" +
-                            "\t <code>/week</code> - вам відправиться розклад для вашої групи на поточний тиждень.\n" +
-                            "\t <code>/next_day</code> - відправляє розклад на наступний день. \n" +
-                            "\t <code>/next_week</code> - відправить розклад на наступний тиждень. \n \n",
-                            parseMode: "HTML");
+                        if (long.TryParse(numberString, out long number))
+                        {
+                            numbers.Add(number);
+                        }
                     }
-                    else if (message.Text.Contains("/info"))
+
+
+                    if (numbers.Contains(message.Chat.Id))
                     {
                         using (Context context = new Context())
                         {
-                            var chat = context.Customers.Find(message.Chat.Id);
-                            if (chat != null)
+                            string text = message.Text.Replace("/notify ", "");
+                            List<long> chatIds = context.Customers.Select(c => c.ChatId).ToList();
+                            foreach (long chatId in chatIds)
                             {
-                                bot.SendMessage(message.Chat.Id,
-                                    $"ChatId: {chat.ChatId}\nCistId: {chat.CistId}\nCistName: {chat.CistName}\nChatType: {chat.ChatType}\nFirstname: {chat.FirstName}\nLastName: {chat.LastName}\nUsername: {chat.Username}");
-                            }
-                            else
-                            {
-                                bot.SendMessage(message.Chat.Id, $"No chat with ChatId {message.Chat.Id} was found.");
+                                try
+                                {
+                                    bot.SendMessage(chatId, text);
+                                    Thread.Sleep(100);
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e);
+                                    continue;
+                                }
                             }
                         }
                     }
                     else
                     {
-                        if (words[0][0] == '/')
+                        bot.SendMessage(message.Chat.Id,
+                            "Вибачте, але ви не маєте доступ до цієї команди");
+                    }
+                }
+                else if (message.Text.Contains("/statistics"))
+                {
+                    string inputString = EnviromentManager.ReadAdmins();
+                    var numbers = new List<long>();
+
+                    string[] numberStrings = inputString.Split(',');
+                    foreach (var numberString in numberStrings)
+                    {
+                        if (long.TryParse(numberString, out long number))
+                        {
+                            numbers.Add(number);
+                        }
+                    }
+
+                    if (numbers.Contains(message.Chat.Id))
+                    {
+                        using (Context context = new Context())
+                        {
+                            long privateCount = context.Customers.Count(c => c.ChatType == "Private");
+                            long groupCount = context.Customers.Count(c =>
+                                c.ChatType == "Group" || c.ChatType == "Supergroup");
+                            long noneCount = context.Customers.Count(c => c.ChatType == null);
+                            long teachersCount = context.Customers
+                                .AsEnumerable()
+                                .Count(e => e.CistName != null && e.CistName.Split(new char[] { ' ', '\t' },
+                                    StringSplitOptions.RemoveEmptyEntries).Length == 3);
+                            bot.SendMessage(message.Chat.Id,
+                                $"Statistics:\nPrivate = {privateCount}\nGroup = {groupCount}\nNot Registered = {noneCount}\nTeachers = {teachersCount}");
+                        }
+                    }
+                    else
+                    {
+                        bot.SendMessage(message.Chat.Id,
+                            "Вибачте, але ви не маєте доступ до цієї команди");
+                    }
+                }
+                else if (message.Text.Contains("/help"))
+                {
+                    bot.SendChatAction(message.Chat.Id, ChatActions.Typing);
+                    bot.SendMessage(
+                        message.Chat.Id,
+                        "Цей бот має низку команд, за допомогою яких ви можете отримати розклад для себе, " +
+                        "і своєї групи. Нижче буде список цих команд, із коротким описом, і прикладом. \n \n" +
+                        "Список команд бота: \n \n" +
+                        "\t <code>/choose group</code> - зміна групи у чаті, замість group треба написати назву вашої групи або ПІБ викладача. " +
+                        "Наприклад: <code>/choose КІУКІ-22-7</code>, <code>/choose кіукі-22-7</code>, <code>/choose Кулак Е. М.</code>, <code>/choose Кулак Ельвіра Миколаївна</code> і тд.\n" +
+                        "Увага! Назву бот розуміє лише якщо та була введена українською, через те шо він звіряє назву із реєстром на сайті cist.nure.ua." +
+                        " Якщо у вас виникла помилка зміни групи, перевірте щоб назва була українською мовою, і відповідала тій що на cist.nure.ua." +
+                        " Також після назви не пишіть нічого, інакше бот не зрозуміє.\n" +
+                        "\t <code>/help</code> - вам відправиться це повідомлення. \n" +
+                        "\t <code>/day</code> - вам відправиться розклад для вашої групи на поточний день. \n" +
+                        "\t <code>/week</code> - вам відправиться розклад для вашої групи на поточний тиждень.\n" +
+                        "\t <code>/next_day</code> - відправляє розклад на наступний день. \n" +
+                        "\t <code>/next_week</code> - відправить розклад на наступний тиждень. \n \n",
+                        parseMode: "HTML");
+                }
+                else if (message.Text.Contains("/info"))
+                {
+                    using (Context context = new Context())
+                    {
+                        var chat = context.Customers.Find(message.Chat.Id);
+                        if (chat != null)
                         {
                             bot.SendMessage(message.Chat.Id,
-                                "Вибачте, ви написали команду не правильно, зверніться до команди /help");
+                                $"ChatId: {chat.ChatId}\nCistId: {chat.CistId}\nCistName: {chat.CistName}\nChatType: {chat.ChatType}\nFirstname: {chat.FirstName}\nLastName: {chat.LastName}\nUsername: {chat.Username}");
+                        }
+                        else
+                        {
+                            bot.SendMessage(message.Chat.Id, $"No chat with ChatId {message.Chat.Id} was found.");
                         }
                     }
                 }
-
-                if (message is not null && message.NewChatMembers is not null)
+                else
                 {
-                    NewMemberHandler.HandleNewMember(bot, message.NewChatMembers, message.Chat.Id);
+                    if (words[0][0] == '/')
+                    {
+                        bot.SendMessage(message.Chat.Id,
+                            "Вибачте, ви написали команду не правильно, зверніться до команди /help");
+                    }
                 }
+            }
+
+            if (message is not null && message.NewChatMembers is not null)
+            {
+                NewMemberHandler.HandleNewMember(bot, message.NewChatMembers.ToArray(), message.Chat.Id);
             }
         }
         catch (Exception e)

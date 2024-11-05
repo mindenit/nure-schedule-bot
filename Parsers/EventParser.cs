@@ -11,14 +11,29 @@ public class EventParser
         {
             try
             {
-                HttpResponseMessage Response = httpClient
-                    .GetAsync(
-                        $"https://api.mindenit.tech/schedule?type={type}&id={id}&start_time={startTime}&end_time={endTime}")
-                    .Result;
-                if (Response.IsSuccessStatusCode)
+                if (type == "group")
                 {
-                    List<Event> Schedule = JsonConvert.DeserializeObject<List<Event>>(Response.Content.ReadAsStringAsync().Result);
-                    return Schedule;
+                    HttpResponseMessage Response = httpClient
+                        .GetAsync(
+                            $"https://api.mindenit.org/schedule/groups/{id}?start={startTime}&end={endTime}")
+                        .Result;
+                    if (Response.IsSuccessStatusCode)
+                    {
+                        List<Event> Schedule = JsonConvert.DeserializeObject<List<Event>>(Response.Content.ReadAsStringAsync().Result);
+                        return Schedule;
+                    }
+                }
+                else if (type == "teacher")
+                {
+                    HttpResponseMessage Response = httpClient
+                        .GetAsync(
+                            $"https://api.mindenit.org/schedule/teachers/{id}?start={startTime}&end={endTime}")
+                        .Result;
+                    if (Response.IsSuccessStatusCode)
+                    {
+                        List<Event> Schedule = JsonConvert.DeserializeObject<List<Event>>(Response.Content.ReadAsStringAsync().Result);
+                        return Schedule;
+                    }
                 }
             }
             catch (Exception e)

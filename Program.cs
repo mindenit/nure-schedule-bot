@@ -28,8 +28,8 @@ try
         TeacherParser.Init();
     }
     
-    Thread thread1 = new Thread(() => dbService.dbActualizer(client));
-    thread1.Start();
+    //Thread thread1 = new Thread(() => dbService.dbActualizer(client));
+    //thread1.Start();
     
     while (true)
     {
